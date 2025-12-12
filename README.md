@@ -1,6 +1,6 @@
 # ai-cmd
 
-Zsh plugin to generate shell commands from natural language using local LLMs via ollama.
+Zsh plugin to generate shell commands from natural language using LLMs via [Claude Code](https://docs.anthropic.com/en/docs/claude-code) or [Ollama](https://ollama.ai/).
 
 ## Installation
 
@@ -30,14 +30,21 @@ echo 'source ~/.zsh/ai-cmd/ai-cmd.plugin.zsh' >> ~/.zshrc
 Set these environment variables **before** the plugin loads (before `source $ZSH/oh-my-zsh.sh`):
 
 ```bash
-# Command to run ollama (default: "ollama")
-export AI_CMD_OLLAMA_CMD="ollama"
-export AI_CMD_OLLAMA_CMD="podman exec systemd-ollama ollama"  # containerized
-export AI_CMD_OLLAMA_CMD="ssh server ollama"                   # remote
+# Backend to use: "ollama" or "claude" (default: "ollama")
+export AI_CMD_BACKEND="ollama"
+export AI_CMD_BACKEND="claude"
 
-# Model to use (default: "qwen2.5:7b")
-export AI_CMD_MODEL="qwen2.5:7b"
-export AI_CMD_MODEL="llama3.2:3b"
+# Ollama configuration
+export AI_CMD_OLLAMA_CMD="ollama"                          # default
+export AI_CMD_OLLAMA_CMD="podman exec systemd-ollama ollama"  # containerized
+export AI_CMD_OLLAMA_CMD="ssh server ollama"               # remote
+export AI_CMD_OLLAMA_MODEL="rnj-1:8b"                      # default
+export AI_CMD_OLLAMA_MODEL="llama3.2:3b"
+
+# Claude configuration
+export AI_CMD_CLAUDE_CMD="claude"                          # default
+export AI_CMD_CLAUDE_MODEL="sonnet"                        # optional
+export AI_CMD_CLAUDE_MODEL="opus"
 
 # Keybinding for ai-insert widget (default: "^[a" / Alt+a)
 export AI_CMD_KEYBINDING="^[a"   # Alt+a
@@ -85,8 +92,12 @@ ai show disk usage by directory | xclip -selection clipboard
 
 ## Requirements
 
-- [ollama](https://ollama.ai/) running locally or accessible via your configured command
-- A model pulled (e.g., `ollama pull qwen2.5:7b`)
+One of the following:
+
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed and authenticated (`claude` CLI)
+- [Ollama](https://ollama.ai/) running locally or accessible via your configured command, with a model pulled (e.g., `ollama pull qwen2.5:7b`)
+
+The plugin defaults to Ollama. Set `AI_CMD_BACKEND=claude` to use Claude Code instead.
 
 ## License
 
