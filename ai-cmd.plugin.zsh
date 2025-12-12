@@ -24,13 +24,12 @@
 # Defaults
 : ${AI_CMD_KEYBINDING:="^[a"}
 : ${AI_CMD_SYSTEM_PROMPT:="You are an AI terminal command generator.
-Your ONLY output must be valid POSIX shell commands.
-No explanations. No commentary. No markdown.
-Output only commands that a terminal can execute."}
+Output ONLY the raw command. No markdown, no code fences, no backticks, no explanations.
+Just the command itself, nothing else."}
 
-# Strip ANSI escape codes and carriage returns from output
-_ai_cmd_strip_ansi() {
-  sed $'s/\x1B\[[?]*[0-9;]*[a-zA-Z]//g' | tr -d '\r'
+# Strip ANSI escape codes, carriage returns, and markdown code fences from output
+_ai_cmd_clean_output() {
+  sed $'s/\x1B\[[?]*[0-9;]*[a-zA-Z]//g' | tr -d '\r' | sed '/^```/d'
 }
 
 # Detect which backend to use
@@ -55,7 +54,7 @@ _ai_cmd_generate() {
       local cmd="${AI_CMD_CLAUDE_CMD:-claude}"
       local model_arg=""
       [[ -n "$AI_CMD_CLAUDE_MODEL" ]] && model_arg="--model $AI_CMD_CLAUDE_MODEL"
-      eval "$cmd -p $model_arg \"\$AI_CMD_SYSTEM_PROMPT prompt: \$prompt\"" 2>/dev/null | _ai_cmd_strip_ansi
+      eval "$cmd -p $model_arg \"\$AI_CMD_SYSTEM_PROMPT prompt: \$prompt\"" 2>/dev/null | _ai_cmd_clean_output
       ;;
     ollama)
       local cmd="${AI_CMD_OLLAMA_CMD:-ollama}"
@@ -63,7 +62,7 @@ _ai_cmd_generate() {
       local full_prompt="SYSTEM: $AI_CMD_SYSTEM_PROMPT
 
 USER: $prompt"
-      eval "$cmd run $model \"\$full_prompt\"" 2>/dev/null | _ai_cmd_strip_ansi
+      eval "$cmd run $model \"\$full_prompt\"" 2>/dev/null | _ai_cmd_clean_output
       ;;
     *)
       echo "Error: No AI backend available. Install 'ollama' or set AI_CMD_BACKEND." >&2
